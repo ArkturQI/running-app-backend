@@ -6,6 +6,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthController {
 
+    @GetMapping("/")
+    public String page(){
+        return "Hello Running!";
+    }
+
     @GetMapping("/api/health")
     public String healthCheck(){
         return "{\"status\": \"OK\", \"message\": \"Running App Backend is alive! 🏃\"}";
