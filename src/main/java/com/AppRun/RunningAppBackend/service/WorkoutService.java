@@ -6,9 +6,11 @@ import com.AppRun.RunningAppBackend.entity.User;
 import com.AppRun.RunningAppBackend.entity.Workout;
 import com.AppRun.RunningAppBackend.repository.UserRepository;
 import com.AppRun.RunningAppBackend.repository.WorkoutRepository;
-import com.AppRun.RunningAppBackend.util.CurrentUserUtil;  // ← Новый импорт
+import com.AppRun.RunningAppBackend.util.CurrentUserUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,17 +29,24 @@ public class WorkoutService {
         this.currentUserUtil = currentUserUtil;
     }
 
-    // Создать тренировку
+    // 🔹 Создать тренировку (ИСПРАВЛЕНО: конвертация String → LocalDateTime)
     public Workout createWorkoutFromDto(WorkoutRequestDto dto) {
         Long currentUserId = currentUserUtil.getCurrentUserId();
 
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + currentUserId));
 
+        // 🔹 Конвертация String → LocalDateTime
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        LocalDateTime startTime = LocalDateTime.parse(dto.getStartTime(), formatter);
+        LocalDateTime endTime = dto.getEndTime() != null
+                ? LocalDateTime.parse(dto.getEndTime(), formatter)
+                : LocalDateTime.now();
+
         Workout workout = new Workout();
         workout.setUser(user);
-        workout.setStartTime(dto.getStartTime());
-        workout.setEndTime(dto.getEndTime());
+        workout.setStartTime(startTime);  // ← Теперь LocalDateTime
+        workout.setEndTime(endTime);      // ← Теперь LocalDateTime
         workout.setDistanceKm(dto.getDistanceKm());
         workout.setDurationMinutes(dto.getDurationMinutes());
         workout.setCalories(dto.getCalories());

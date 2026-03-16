@@ -3,8 +3,8 @@ package com.AppRun.RunningAppBackend.config;
 import com.AppRun.RunningAppBackend.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,26 +21,21 @@ public class SecurityFilterConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .httpBasic(basic -> basic.disable())
-                .formLogin(form -> form.disable())
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)  // ← Отключаем CORS для теста
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 ПУБЛИЧНЫЕ ЭНДПОИНТЫ (без токена)
+                        // 🔓 ПУБЛИЧНЫЕ
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
 
-                        // 🔐 ЗАЩИЩЁННЫЕ ЭНДПОИНТЫ (явно для каждого метода)
-                        .requestMatchers(HttpMethod.GET, "/api/workouts/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/workouts/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/workouts/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/workouts/**").authenticated()
+                        // 🔐 ВСЕ workouts требуют авторизации
+                        .requestMatchers("/api/workouts/**").authenticated()
 
-                        // 🔐 Всё остальное в /api/* требует авторизации
-                        .requestMatchers("/api/**").authenticated()
-
-                        // 🔐 Всё остальное требует авторизации
+                        // 🔐 Всё остальное
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

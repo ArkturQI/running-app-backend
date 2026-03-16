@@ -1,28 +1,23 @@
 package com.AppRun.RunningAppBackend.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class WorkoutRequestDto {
 
-    @NotNull(message = "ID пользователя обязателен")
-    private Long userId;
-
     @NotNull(message = "Время начала обязательно")
-    private LocalDateTime startTime;
+    private String startTime;
 
-    private LocalDateTime endTime;
+    private String endTime;
 
-    @Positive(message = "Дистанция должна быть больше 0")
+    @Min(value = 0, message = "Дистанция не может быть отрицательной")
     private Double distanceKm;
 
+    @Min(value = 0, message = "Длительность не может быть отрицательной")
     private Integer durationMinutes;
+
+    @Min(value = 0, message = "Калории не могут быть отрицательными")
     private Integer calories;
 }

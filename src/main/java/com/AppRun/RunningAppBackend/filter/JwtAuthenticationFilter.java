@@ -1,67 +1,72 @@
 package com.AppRun.RunningAppBackend.filter;
 
-import com.AppRun.RunningAppBackend.util.JwtUtil;
+import com.AppRun.RunningAppBackend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
-        // 🔹 ЛОГ ДЛЯ ОТЛАДКИ
-        System.out.println("🔍 [JWT Filter] Authorization header: " + authHeader);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String token = authHeader.substring(7);
 
-            String token = authHeader.substring(7);  // ✅ Убираем "Bearer " (7 символов)
+        try {
+            String email = jwtService.extractUsername(token);
 
-            // 🔹 ЛОГ ДЛЯ ОТЛАДКИ
-            System.out.println("🔍 [JWT Filter] Token found, length: " + token.length());
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            try {
-                Long userId = jwtUtil.validateTokenAndGetUserId(token);
+                if (jwtService.isTokenValid(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                // 🔹 ЛОГ ДЛЯ ОТЛАДКИ
-                System.out.println("✅ [JWT Filter] Token valid! User ID: " + userId);
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                request.setAttribute("userId", userId);
-
-            } catch (Exception e) {
-                // 🔹 ЛОГ ОБ ОШИБКЕ
-                System.out.println("❌ [JWT Filter] Token validation FAILED: " + e.getMessage());
-                e.printStackTrace();
-                SecurityContextHolder.clearContext();
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("❌ [JWT Filter] Error: " + e.getMessage());
+            // Не прерываем запрос, просто не аутентифицируем
         }
 
         filterChain.doFilter(request, response);
