@@ -1,18 +1,19 @@
 package com.AppRun.RunningAppBackend.service;
 
 import com.AppRun.RunningAppBackend.dto.WorkoutRequestDto;
-import com.AppRun.RunningAppBackend.dto.WorkoutResponseDto;
 import com.AppRun.RunningAppBackend.entity.User;
 import com.AppRun.RunningAppBackend.entity.Workout;
 import com.AppRun.RunningAppBackend.repository.UserRepository;
 import com.AppRun.RunningAppBackend.repository.WorkoutRepository;
 import com.AppRun.RunningAppBackend.util.CurrentUserUtil;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class WorkoutService {
@@ -29,14 +30,25 @@ public class WorkoutService {
         this.currentUserUtil = currentUserUtil;
     }
 
-    // 🔹 Создать тренировку (ИСПРАВЛЕНО: конвертация String → LocalDateTime)
+    // 🔹 Создать тренировку
     public Workout createWorkoutFromDto(WorkoutRequestDto dto) {
-        Long currentUserId = currentUserUtil.getCurrentUserId();
+        System.out.println("🔍 [Service] Создание тренировки...");
 
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + currentUserId));
+        // 🔹 Получаем email из SecurityContext (не из CurrentUserUtil!)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String email = userDetails.getUsername();
 
-        // 🔹 Конвертация String → LocalDateTime
+        System.out.println("🔍 [Service] Email из токена: " + email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    System.out.println("❌ [Service] Пользователь не найден: " + email);
+                    return new RuntimeException("Пользователь не найден: " + email);
+                });
+
+        System.out.println("✅ [Service] Пользователь найден: ID = " + user.getId());
+
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime startTime = LocalDateTime.parse(dto.getStartTime(), formatter);
         LocalDateTime endTime = dto.getEndTime() != null
@@ -45,46 +57,52 @@ public class WorkoutService {
 
         Workout workout = new Workout();
         workout.setUser(user);
-        workout.setStartTime(startTime);  // ← Теперь LocalDateTime
-        workout.setEndTime(endTime);      // ← Теперь LocalDateTime
+        workout.setStartTime(startTime);
+        workout.setEndTime(endTime);
         workout.setDistanceKm(dto.getDistanceKm());
         workout.setDurationMinutes(dto.getDurationMinutes());
         workout.setCalories(dto.getCalories());
 
-        return workoutRepository.save(workout);
+        Workout saved = workoutRepository.save(workout);
+
+        System.out.println("✅ [Service] Тренировка сохранена! ID = " + saved.getId());
+
+        return saved;
     }
 
-    public List<WorkoutResponseDto> getMyWorkouts() {
-        Long currentUserId = currentUserUtil.getCurrentUserId();
-        List<Workout> workouts = workoutRepository.findByUserId(currentUserId);
-        return workouts.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    // 🔹 Получить все тренировки пользователя
+    public List<Workout> getMyWorkouts() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String email = userDetails.getUsername();
+
+        System.out.println("🔍 [Service] Получение тренировок для: " + email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + email));
+
+        List<Workout> workouts = workoutRepository.findByUserId(user.getId());
+        System.out.println("✅ [Service] Найдено тренировок: " + workouts.size());
+
+        return workouts;
     }
 
-    public WorkoutResponseDto getWorkoutById(Long id) {
-        Long currentUserId = currentUserUtil.getCurrentUserId();
+    // 🔹 Удалить тренировку
+    public void deleteWorkout(Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String email = userDetails.getUsername();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         Workout workout = workoutRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Тренировка не найдена"));
 
-        if (!workout.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Доступ запрещён: это не ваша тренировка");
+        if (!workout.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Доступ запрещён");
         }
 
-        return convertToDto(workout);
-    }
-
-    private WorkoutResponseDto convertToDto(Workout workout) {
-        WorkoutResponseDto dto = new WorkoutResponseDto();
-        dto.setId(workout.getId());
-        dto.setUserId(workout.getUser().getId());
-        dto.setStartTime(workout.getStartTime());
-        dto.setEndTime(workout.getEndTime());
-        dto.setDistanceKm(workout.getDistanceKm());
-        dto.setDurationMinutes(workout.getDurationMinutes());
-        dto.setCalories(workout.getCalories());
-        dto.setCreatedAt(workout.getCreatedAt());
-        return dto;
+        workoutRepository.delete(workout);
     }
 }

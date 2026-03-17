@@ -1,7 +1,6 @@
 package com.AppRun.RunningAppBackend.controller;
 
 import com.AppRun.RunningAppBackend.dto.WorkoutRequestDto;
-import com.AppRun.RunningAppBackend.dto.WorkoutResponseDto;
 import com.AppRun.RunningAppBackend.entity.Workout;
 import com.AppRun.RunningAppBackend.service.WorkoutService;
 import jakarta.validation.Valid;
@@ -12,45 +11,53 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/workouts")
+@CrossOrigin(origins = "*")
 public class WorkoutController {
 
-    private final WorkoutService workoutService;  // ← ИСПОЛЬЗУЕМ SERVICE
+    private final WorkoutService workoutService;
 
     public WorkoutController(WorkoutService workoutService) {
         this.workoutService = workoutService;
     }
 
-    // 🔹 Получить все тренировки текущего пользователя
     @GetMapping("/my")
-    public ResponseEntity<List<WorkoutResponseDto>> getMyWorkouts() {
-        List<WorkoutResponseDto> workouts = workoutService.getMyWorkouts();
-        return ResponseEntity.ok(workouts);
+    public ResponseEntity<List<Workout>> getMyWorkouts() {
+        System.out.println("🔍 [Controller] GET /api/workouts/my");
+
+        try {
+            List<Workout> workouts = workoutService.getMyWorkouts();
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    // 🔹 Создать тренировку
     @PostMapping
     public ResponseEntity<Workout> createWorkout(@RequestBody @Valid WorkoutRequestDto dto) {
-        System.out.println("🔍 [Controller] Получен запрос на создание тренировки");
+        System.out.println("🔍 [Controller] POST /api/workouts");
 
-        Workout workout = workoutService.createWorkoutFromDto(dto);
-
-        System.out.println("✅ [Controller] Тренировка сохранена! ID = " + workout.getId());
-
-        return ResponseEntity.ok(workout);
+        try {
+            Workout workout = workoutService.createWorkoutFromDto(dto);
+            return ResponseEntity.ok(workout);
+        } catch (Exception e) {
+            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    // 🔹 Получить тренировку по ID
-    @GetMapping("/{id}")
-    public ResponseEntity<WorkoutResponseDto> getWorkoutById(@PathVariable Long id) {
-        WorkoutResponseDto workout = workoutService.getWorkoutById(id);
-        return ResponseEntity.ok(workout);
-    }
-
-    // 🔹 Удалить тренировку
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkout(@PathVariable Long id) {
-        // Для удаления можно добавить метод в сервис или оставить тут
-        // Пока оставим простую реализацию
-        return ResponseEntity.ok().build();
+        System.out.println("🔍 [Controller] DELETE /api/workouts/" + id);
+
+        try {
+            workoutService.deleteWorkout(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
