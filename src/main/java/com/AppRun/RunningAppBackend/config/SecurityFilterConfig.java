@@ -11,7 +11,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 public class SecurityFilterConfig {
-
     private final JwtAuthenticationFilter jwtFilter;
 
     public SecurityFilterConfig(JwtAuthenticationFilter jwtFilter) {
@@ -28,12 +27,24 @@ public class SecurityFilterConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 ПУБЛИЧНЫЕ
+                        // 🔓 ПУБЛИЧНЫЕ ЭНДПОИНТЫ (без авторизации)
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
+                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/").permitAll()
 
-                        // 🔐 ВСЕ workouts требуют авторизации
+                        // ← ДОБАВЛЕНО: Лидерборд публичный
+                        .requestMatchers("/api/social/leaderboard").permitAll()
+
+                        // 🔐 ТРЕБУЮТ АВТОРИЗАЦИИ
                         .requestMatchers("/api/workouts/**").authenticated()
+                        .requestMatchers("/api/workout-points/**").authenticated()
+                        .requestMatchers("/api/stats/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/social/**").authenticated()
+                        .requestMatchers("/api/training-plans/**").authenticated()
+                        .requestMatchers("/api/records/**").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
 
                         // 🔐 Всё остальное
                         .anyRequest().authenticated()

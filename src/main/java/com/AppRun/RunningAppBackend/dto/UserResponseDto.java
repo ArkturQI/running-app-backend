@@ -18,7 +18,6 @@ public class UserResponseDto {
     public UserResponseDto(User user) {
         this.id = user.getId();
         this.email = user.getEmail();
-        this.createdAt = user.getCreateAt();
+        this.createdAt = user.getCreatedAt();  // ← ИСПРАВЛЕНО!
     }
-
 }
