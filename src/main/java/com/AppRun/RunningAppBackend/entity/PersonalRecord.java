@@ -22,19 +22,19 @@ public class PersonalRecord {
     private User user;
 
     @Column(nullable = false)
-    private Double distanceKm;  // 0.4, 1, 2, 1.609 (миля), 5, 10, 21.1, 42.2
+    private Double distanceKm;  
 
     @Column(nullable = false)
-    private String distanceName;  // "400м", "1км", "Миля", "5К" и т.д.
+    private String distanceName;  
 
     @Column(nullable = false)
-    private Long bestTimeSeconds;  // Лучшее время в секундах
+    private Long bestTimeSeconds;  
 
     @Column
-    private LocalDateTime achievedAt;  // Когда установлен рекорд
+    private LocalDateTime achievedAt; 
 
     @Column
-    private Long workoutId;  // ID тренировки где установлен
+    private Long workoutId;  
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
