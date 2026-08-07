@@ -39,7 +39,6 @@ public class StatsService {
     public StatsResponse getWeeklyStats(Integer weekNumber, Integer year) {
         User user = getCurrentUser();
 
-        // ← ПРОЩЕ: Берём текущую неделю от понедельника
         LocalDate today = LocalDate.now();
         LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate endOfWeek = startOfWeek.plusDays(6);
