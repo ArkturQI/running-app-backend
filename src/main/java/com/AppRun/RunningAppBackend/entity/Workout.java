@@ -28,17 +28,14 @@ public class Workout {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    // ✅ ИЗМЕНИЛ: @Min вместо @Positive (разрешаем 0 для эмулятора)
     @Min(value = 0, message = "Дистанция не может быть отрицательной")
     @Column(name = "distance_km", nullable = false)
     private Double distanceKm;
 
-    // ✅ ИЗМЕНИЛ: @Min вместо @Positive (разрешаем 0)
     @Min(value = 0, message = "Длительность не может быть отрицательной")
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    // ✅ ИЗМЕНИЛ: @Min вместо @Positive (разрешаем 0)
     @Min(value = 0, message = "Калории не могут быть отрицательными")
     @Column(name = "calories")
     private Integer calories;
