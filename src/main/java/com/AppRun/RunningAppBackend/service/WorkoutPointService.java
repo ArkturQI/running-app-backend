@@ -21,7 +21,6 @@ public class WorkoutPointService {
         this.workoutRepository = workoutRepository;
     }
 
-    // Создать одну точку
     public WorkoutPoint createPoint(WorkoutPointRequestDto dto) {
         Workout workout = workoutRepository.findById(dto.getWorkoutId())
                 .orElseThrow(() -> new RuntimeException("Тренировка не найдена с ID: " + dto.getWorkoutId()));
@@ -37,7 +36,6 @@ public class WorkoutPointService {
         return pointRepository.save(point);
     }
 
-    // Получить все точки тренировки
     public List<WorkoutPointResponseDto> getPointsByWorkoutId(Long workoutId) {
         List<WorkoutPoint> points = pointRepository.findByWorkoutId(workoutId);
         return points.stream()
@@ -45,7 +43,6 @@ public class WorkoutPointService {
                 .collect(Collectors.toList());
     }
 
-    // Конвертация Entity → DTO
     private WorkoutPointResponseDto convertToDto(WorkoutPoint point) {
         WorkoutPointResponseDto dto = new WorkoutPointResponseDto();
         dto.setId(point.getId());
