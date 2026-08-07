@@ -30,24 +30,22 @@ public class WorkoutService {
         this.currentUserUtil = currentUserUtil;
     }
 
-    // 🔹 Создать тренировку
     public Workout createWorkoutFromDto(WorkoutRequestDto dto) {
         System.out.println("🔍 [Service] Создание тренировки...");
 
-        // 🔹 Получаем email из SecurityContext (не из CurrentUserUtil!)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String email = userDetails.getUsername();
 
-        System.out.println("🔍 [Service] Email из токена: " + email);
+        System.out.println("[Service] Email из токена: " + email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    System.out.println("❌ [Service] Пользователь не найден: " + email);
+                    System.out.println("[Service] Пользователь не найден: " + email);
                     return new RuntimeException("Пользователь не найден: " + email);
                 });
 
-        System.out.println("✅ [Service] Пользователь найден: ID = " + user.getId());
+        System.out.println("[Service] Пользователь найден: ID = " + user.getId());
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime startTime = LocalDateTime.parse(dto.getStartTime(), formatter);
@@ -65,29 +63,27 @@ public class WorkoutService {
 
         Workout saved = workoutRepository.save(workout);
 
-        System.out.println("✅ [Service] Тренировка сохранена! ID = " + saved.getId());
+        System.out.println("[Service] Тренировка сохранена! ID = " + saved.getId());
 
         return saved;
     }
 
-    // 🔹 Получить все тренировки пользователя
     public List<Workout> getMyWorkouts() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String email = userDetails.getUsername();
 
-        System.out.println("🔍 [Service] Получение тренировок для: " + email);
+        System.out.println("[Service] Получение тренировок для: " + email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + email));
 
         List<Workout> workouts = workoutRepository.findByUserId(user.getId());
-        System.out.println("✅ [Service] Найдено тренировок: " + workouts.size());
+        System.out.println("[Service] Найдено тренировок: " + workouts.size());
 
         return workouts;
     }
 
-    // 🔹 Удалить тренировку
     public void deleteWorkout(Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
