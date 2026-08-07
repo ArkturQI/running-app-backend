@@ -65,8 +65,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            System.out.println("❌ [JWT Filter] Error: " + e.getMessage());
-            // Не прерываем запрос, просто не аутентифицируем
+            System.out.println("[JWT Filter] Error: " + e.getMessage());
+            
         }
 
         filterChain.doFilter(request, response);
