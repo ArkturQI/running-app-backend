@@ -23,9 +23,9 @@ public class LeaderboardService {
     }
 
     /**
-     * Получить лидерборд за период
-     * @param period day, week, month, year, all
-     * @return Список пользователей с статистикой
+     Получить лидерборд за период
+     @param period day, week, month, year, all
+     @return Список пользователей с статистикой
      */
     public List<LeaderboardEntry> getLeaderboard(String period) {
         LocalDateTime startDate = getStartDate(period);
@@ -34,16 +34,13 @@ public class LeaderboardService {
         List<LeaderboardEntry> leaderboard = new ArrayList<>();
 
         for (User user : allUsers) {
-            // Получить тренировки пользователя за период
             List<Workout> workouts = workoutRepository.findByUserIdAndDateRange(
                     user.getId(), startDate, LocalDateTime.now());
 
-            // Пропустить если нет тренировок
             if (workouts.isEmpty()) {
                 continue;
             }
 
-            // Расчёт статистики
             double totalDistance = workouts.stream()
                     .mapToDouble(w -> w.getDistanceKm() != null ? w.getDistanceKm() : 0.0)
                     .sum();
@@ -58,20 +55,18 @@ public class LeaderboardService {
                     .mapToInt(w -> w.getCalories() != null ? w.getCalories() : 0)
                     .sum();
 
-            // Добавить в лидерборд
             leaderboard.add(new LeaderboardEntry(
-                    0L,  // Rank установим позже
+                    0L,  
                     user.getId(),
-                    user.getEmail(),  // Username (так как поля username нет)
+                    user.getEmail(), 
                     user.getEmail(),
-                    Math.round(totalDistance * 100.0) / 100.0,  // Округление до 2 знаков
+                    Math.round(totalDistance * 100.0) / 100.0,  
                     totalWorkouts,
                     totalDuration,
                     totalCalories
             ));
         }
 
-        // Сортировка по дистанции (убывание)
         leaderboard.sort((a, b) -> Double.compare(b.getTotalDistance(), a.getTotalDistance()));
 
         // Установка рангов
@@ -83,9 +78,9 @@ public class LeaderboardService {
     }
 
     /**
-     * Получить дату начала периода
-     * @param period day, week, month, year, all
-     * @return LocalDateTime начала периода
+     Получить дату начала периода
+     @param period day, week, month, year, all
+     @return LocalDateTime начала периода
      */
     private LocalDateTime getStartDate(String period) {
         LocalDateTime now = LocalDateTime.now();
