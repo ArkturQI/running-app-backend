@@ -34,7 +34,6 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // ===== НОВОЕ ПОЛЕ: Friend Code =====
     @Column(name = "friend_code", unique = true, length = 12)
     private String friendCode;
 
