@@ -16,7 +16,6 @@ public class CurrentUserUtil {
         this.userRepository = userRepository;
     }
 
-    // 🔹 Получить email текущего пользователя из токена
     public String getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
@@ -24,17 +23,15 @@ public class CurrentUserUtil {
         }
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        return userDetails.getUsername();  // ← Это email из токена
+        return userDetails.getUsername();  
     }
 
-    // 🔹 Получить объект пользователя
     public User getCurrentUser() {
         String email = getCurrentUserEmail();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + email));
     }
 
-    // 🔹 Получить ID текущего пользователя
     public Long getCurrentUserId() {
         User user = getCurrentUser();
         return user.getId();
