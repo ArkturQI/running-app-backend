@@ -27,16 +27,16 @@ public class SecurityFilterConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 ПУБЛИЧНЫЕ ЭНДПОИНТЫ (без авторизации)
+                        // ПУБЛИЧНЫЕ ЭНДПОИНТЫ (без авторизации)
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/").permitAll()
 
-                        // ← ДОБАВЛЕНО: Лидерборд публичный
+                        // Лидерборд публичный
                         .requestMatchers("/api/social/leaderboard").permitAll()
 
-                        // 🔐 ТРЕБУЮТ АВТОРИЗАЦИИ
+                        // ТРЕБУЮТ АВТОРИЗАЦИИ
                         .requestMatchers("/api/workouts/**").authenticated()
                         .requestMatchers("/api/workout-points/**").authenticated()
                         .requestMatchers("/api/stats/**").authenticated()
@@ -45,8 +45,6 @@ public class SecurityFilterConfig {
                         .requestMatchers("/api/training-plans/**").authenticated()
                         .requestMatchers("/api/records/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
-
-                        // 🔐 Всё остальное
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
