@@ -22,13 +22,13 @@ public class WorkoutController {
 
     @GetMapping("/my")
     public ResponseEntity<List<Workout>> getMyWorkouts() {
-        System.out.println("🔍 [Controller] GET /api/workouts/my");
+        System.out.println("[Controller] GET /api/workouts/my");
 
         try {
             List<Workout> workouts = workoutService.getMyWorkouts();
             return ResponseEntity.ok(workouts);
         } catch (Exception e) {
-            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            System.out.println("[Controller] Ошибка: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
@@ -36,13 +36,13 @@ public class WorkoutController {
 
     @PostMapping
     public ResponseEntity<Workout> createWorkout(@RequestBody @Valid WorkoutRequestDto dto) {
-        System.out.println("🔍 [Controller] POST /api/workouts");
+        System.out.println("[Controller] POST /api/workouts");
 
         try {
             Workout workout = workoutService.createWorkoutFromDto(dto);
             return ResponseEntity.ok(workout);
         } catch (Exception e) {
-            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            System.out.println("[Controller] Ошибка: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
@@ -56,7 +56,7 @@ public class WorkoutController {
             workoutService.deleteWorkout(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.out.println("❌ [Controller] Ошибка: " + e.getMessage());
+            System.out.println("[Controller] Ошибка: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
