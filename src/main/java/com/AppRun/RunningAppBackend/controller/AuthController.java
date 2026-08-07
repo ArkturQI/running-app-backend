@@ -25,11 +25,11 @@ public class AuthController {
         System.out.println("🔍 [Controller] Регистрация: " + request.getEmail());
 
         try {
-            // Нормализация email
+          
             String normalizedEmail = request.getEmail().trim().toLowerCase();
 
             var user = authService.register(normalizedEmail, request.getPassword());
-            System.out.println("✅ [Controller] Пользователь создан: ID = " + user.getId());
+            System.out.println("[Controller] Пользователь создан: ID = " + user.getId());
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Пользователь зарегистрирован");
@@ -39,8 +39,8 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            // ← Валидация email/пароля
-            System.out.println("❌ [Controller] Ошибка валидации: " + e.getMessage());
+    
+            System.out.println("[Controller] Ошибка валидации: " + e.getMessage());
 
             Map<String, Object> error = new HashMap<>();
             error.put("error", e.getMessage());
@@ -48,8 +48,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
 
         } catch (RuntimeException e) {
-            // ← Email занят или другая ошибка
-            System.out.println("❌ [Controller] Ошибка регистрации: " + e.getMessage());
+            System.out.println("[Controller] Ошибка регистрации: " + e.getMessage());
 
             Map<String, Object> error = new HashMap<>();
             error.put("error", e.getMessage());
@@ -66,7 +65,7 @@ public class AuthController {
             String normalizedEmail = request.getEmail().trim().toLowerCase();
             String token = authService.login(normalizedEmail, request.getPassword());
 
-            System.out.println("✅ [Controller] Токен создан: " + token.substring(0, 30) + "...");
+            System.out.println("[Controller] Токен создан: " + token.substring(0, 30) + "...");
 
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
@@ -76,7 +75,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            System.out.println("❌ [Controller] Ошибка валидации: " + e.getMessage());
+            System.out.println("[Controller] Ошибка валидации: " + e.getMessage());
 
             Map<String, Object> error = new HashMap<>();
             error.put("error", e.getMessage());
@@ -84,7 +83,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
 
         } catch (RuntimeException e) {
-            System.out.println("❌ [Controller] Ошибка входа: " + e.getMessage());
+            System.out.println("[Controller] Ошибка входа: " + e.getMessage());
 
             Map<String, Object> error = new HashMap<>();
             error.put("error", e.getMessage());
