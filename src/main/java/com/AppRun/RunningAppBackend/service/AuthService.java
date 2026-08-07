@@ -14,34 +14,34 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
-    private final EmailValidator emailValidator;  // ← ДОБАВИТЬ
+    private final EmailValidator emailValidator; 
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
                        CustomUserDetailsService userDetailsService,
-                       EmailValidator emailValidator) {  // ← ДОБАВИТЬ
+                       EmailValidator emailValidator) { 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
-        this.emailValidator = emailValidator;  // ← ДОБАВИТЬ
+        this.emailValidator = emailValidator;  
     }
 
-    // 🔹 Регистрация нового пользователя
+   
     public User register(String email, String plainPassword) {
-        System.out.println("🔍 [AuthService] Регистрация: " + email);
+        System.out.println("[AuthService] Регистрация: " + email);
 
-        // ===== НОВАЯ ВАЛИДАЦИЯ EMAIL =====
-        emailValidator.validate(email);  // ← Проверка формата
+     
+        emailValidator.validate(email); 
 
-        // Проверка на уникальность
+     
         if (userRepository.existsByEmail(email)) {
-            System.out.println("❌ [AuthService] Email уже занят: " + email);
+            System.out.println("[AuthService] Email уже занят: " + email);
             throw new RuntimeException("Email уже занят: " + email);
         }
 
-        // Проверка пароля
+    
         if (plainPassword == null || plainPassword.length() < 6) {
             throw new IllegalArgumentException("Пароль должен содержать минимум 6 символов");
         }
@@ -51,43 +51,43 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(plainPassword));
 
         User saved = userRepository.save(user);
-        System.out.println("✅ [AuthService] Пользователь создан: ID = " + saved.getId());
+        System.out.println("[AuthService] Пользователь создан: ID = " + saved.getId());
 
         return saved;
     }
 
-    // 🔹 Вход пользователя (возвращает токен)
+    // Вход пользователя (возвращает токен)
     public String login(String email, String plainPassword) {
-        System.out.println("🔍 [AuthService] Попытка входа: " + email);
+        System.out.println("[AuthService] Попытка входа: " + email);
 
-        // Валидация email при логине тоже
-        emailValidator.validate(email);  // ← Проверка формата
+        
+        emailValidator.validate(email);  
 
         String normalizedEmail = email.trim().toLowerCase();
-        System.out.println("🔍 [AuthService] Нормализованный email: " + normalizedEmail);
+        System.out.println("[AuthService] Нормализованный email: " + normalizedEmail);
 
         User user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> {
-                    System.out.println("❌ [AuthService] Пользователь НЕ НАЙДЕН: " + normalizedEmail);
+                    System.out.println("[AuthService] Пользователь НЕ НАЙДЕН: " + normalizedEmail);
                     return new RuntimeException("Пользователь не найден");
                 });
 
-        System.out.println("✅ [AuthService] Пользователь найден: ID = " + user.getId());
+        System.out.println("[AuthService] Пользователь найден: ID = " + user.getId());
 
         boolean passwordMatches = passwordEncoder.matches(plainPassword, user.getPassword());
-        System.out.println("🔍 [AuthService] Пароль совпадает: " + passwordMatches);
+        System.out.println("[AuthService] Пароль совпадает: " + passwordMatches);
 
         if (!passwordMatches) {
-            System.out.println("❌ [AuthService] Неверный пароль");
+            System.out.println("[AuthService] Неверный пароль");
             throw new RuntimeException("Неверный пароль");
         }
 
-        System.out.println("✅ [AuthService] Пароль верный");
+        System.out.println("[AuthService] Пароль верный");
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(normalizedEmail);
         String token = jwtService.generateToken(userDetails);
 
-        System.out.println("✅ [AuthService] Токен создан: " + token.substring(0, 30) + "...");
+        System.out.println("[AuthService] Токен создан: " + token.substring(0, 30) + "...");
 
         return token;
     }
