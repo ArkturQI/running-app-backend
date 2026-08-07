@@ -17,8 +17,7 @@ public class SocialController {
     public SocialController(LeaderboardService leaderboardService) {
         this.leaderboardService = leaderboardService;
     }
-
-    // 🔹 Лидерборд (единственный endpoint в этом контроллере)
+    
     @GetMapping("/leaderboard")
     public ResponseEntity<List<LeaderboardEntry>> getLeaderboard(
             @RequestParam(defaultValue = "week") String period) {
